@@ -9,10 +9,11 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>JaCoCo Maven plug-in example for Java project</name>
+    <name>JaCoCo Maven Java Example</name>
     <url>http://www.eclemma.org/jacoco</url>
 
     <dependencies>
+        <!-- JUnit for testing -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -22,8 +23,21 @@
     </dependencies>
 
     <build>
-        <sourceDirectory>.</sourceDirectory> <!-- Set to custom source dir -->
+        <sourceDirectory>.</sourceDirectory> <!-- Adjust if Java files are not in root -->
         <plugins>
+
+            <!-- Maven Compiler Plugin -->
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>21</source>
+                    <target>21</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+
+            <!-- JaCoCo Plugin -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -68,6 +82,7 @@
                     </execution>
                 </executions>
             </plugin>
+
         </plugins>
     </build>
 </project>
