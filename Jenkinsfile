@@ -10,7 +10,7 @@ pipeline {
         GIT_REPO = 'https://github.com/bharathsavadatti447/git_assignment_27092025.git'
         BRANCH   = 'main'
         EMAIL_RECIPIENTS = 'bharath.savadatti447@gmail.com'
-        CUSTOM_SRC = '.'  // Adjust to your Java file location if not in root
+        CUSTOM_SRC = '.'  // Adjust if your Java files are in a subfolder
     }
 
     stages {
@@ -33,8 +33,9 @@ pipeline {
 
         stage('Build & Test') {
             steps {
-                echo "Building Maven project with custom source directory..."
-                sh "mvn clean package -Dproject.build.sourceDirectory=${CUSTOM_SRC}"
+                echo "Compiling and testing Maven project with custom source directory..."
+                sh "mvn clean compile -Dproject.build.sourceDirectory=${CUSTOM_SRC}"
+                sh "mvn test -Dproject.build.sourceDirectory=${CUSTOM_SRC}"
             }
         }
 
@@ -42,6 +43,18 @@ pipeline {
             steps {
                 echo "Generating JaCoCo code coverage report..."
                 sh "mvn jacoco:report -Dproject.build.sourceDirectory=${CUSTOM_SRC}"
+
+                // Apply coverage thresholds
+                sh """
+                mvn jacoco:check \
+                    -Djacoco.check.rules[0].element=BUNDLE \
+                    -Djacoco.check.rules[0].limits[0].counter=INSTRUCTION \
+                    -Djacoco.check.rules[0].limits[0].value=COVEREDRATIO \
+                    -Djacoco.check.rules[0].limits[0].minimum=0.80 \
+                    -Djacoco.check.rules[0].limits[1].counter=BRANCH \
+                    -Djacoco.check.rules[0].limits[1].value=COVEREDRATIO \
+                    -Djacoco.check.rules[0].limits[1].minimum=0.70
+                """
                 publishHTML([
                     allowMissing: false,
                     alwaysLinkToLastBuild: true,
@@ -56,6 +69,7 @@ pipeline {
         stage('Archive Artifacts') {
             steps {
                 echo "Archiving JAR artifacts..."
+                sh "mvn package -Dproject.build.sourceDirectory=${CUSTOM_SRC}"
                 archiveArtifacts artifacts: 'target/*.jar', allowEmptyArchive: false
             }
         }
