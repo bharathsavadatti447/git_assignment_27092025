@@ -1,11 +1,16 @@
 pipeline {
     agent { label 'Node-Linux' }
 
+    tools {
+        jdk 'Java-21'
+        maven 'Maven-3.9.11'
+    }
+
     environment {
         GIT_REPO = 'https://github.com/bharathsavadatti447/git_assignment_27092025.git'
-        BRANCH   = 'main'
+        BRANCH = 'main'
         EMAIL_RECIPIENTS = 'bharath.savadatti447@gmail.com'
-        CUSTOM_SRC = '.'  // Adjust if your Java files are in a subfolder
+        CUSTOM_SRC = '.'  // Java files location
     }
 
     stages {
@@ -19,7 +24,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                echo "Cloning the repository from GitHub..."
+                echo "Cloning repository from GitHub..."
                 git branch: "${BRANCH}",
                     url: "${GIT_REPO}",
                     credentialsId: 'github'
@@ -36,7 +41,7 @@ pipeline {
 
         stage('JaCoCo Coverage') {
             steps {
-                echo "Generating JaCoCo coverage report and checking thresholds..."
+                echo "Generating JaCoCo report and enforcing coverage thresholds..."
                 sh "mvn jacoco:report -Dproject.build.sourceDirectory=${CUSTOM_SRC}"
                 sh "mvn jacoco:check -Dproject.build.sourceDirectory=${CUSTOM_SRC}"
                 publishHTML([
@@ -50,9 +55,9 @@ pipeline {
             }
         }
 
-        stage('Archive Artifacts') {
+        stage('Package & Archive') {
             steps {
-                echo "Packaging and archiving JAR..."
+                echo "Packaging project and archiving JAR..."
                 sh "mvn package -Dproject.build.sourceDirectory=${CUSTOM_SRC}"
                 archiveArtifacts artifacts: 'target/*.jar', allowEmptyArchive: false
             }
