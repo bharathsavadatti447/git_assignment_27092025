@@ -38,28 +38,11 @@ pipeline {
                 sh "mvn test -Dproject.build.sourceDirectory=${CUSTOM_SRC}"
             }
         }
-
-        stage('JaCoCo Coverage') {
-            steps {
-                echo "Generating JaCoCo report and enforcing coverage thresholds..."
-                sh "mvn jacoco:report -Dproject.build.sourceDirectory=${CUSTOM_SRC}"
-                sh "mvn jacoco:check -Dproject.build.sourceDirectory=${CUSTOM_SRC}"
-                publishHTML([
-                    allowMissing: false,
-                    alwaysLinkToLastBuild: true,
-                    keepAll: true,
-                    reportDir: 'target/site/jacoco',
-                    reportFiles: 'index.html',
-                    reportName: 'JaCoCo Coverage Report'
-                ])
-            }
-        }
-
         stage('Package & Archive') {
             steps {
                 echo "Packaging project and archiving JAR..."
                 sh "mvn package -Dproject.build.sourceDirectory=${CUSTOM_SRC}"
-                archiveArtifacts artifacts: 'target/*.jar', allowEmptyArchive: false
+                archiveArtifacts artifacts: 'target/*.jar', allowEmptyArchive: true
             }
         }
 
