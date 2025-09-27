@@ -1,11 +1,6 @@
 pipeline {
     agent { label 'Node-Linux' }
 
-    tools {
-        maven 'Maven-3.9.11'
-        jdk 'Java-21'
-    }
-
     environment {
         GIT_REPO = 'https://github.com/bharathsavadatti447/git_assignment_27092025.git'
         BRANCH   = 'main'
@@ -33,7 +28,7 @@ pipeline {
 
         stage('Build & Test') {
             steps {
-                echo "Compiling and testing Maven project with custom source directory..."
+                echo "Compiling and testing Maven project..."
                 sh "mvn clean compile -Dproject.build.sourceDirectory=${CUSTOM_SRC}"
                 sh "mvn test -Dproject.build.sourceDirectory=${CUSTOM_SRC}"
             }
@@ -41,20 +36,9 @@ pipeline {
 
         stage('JaCoCo Coverage') {
             steps {
-                echo "Generating JaCoCo code coverage report..."
+                echo "Generating JaCoCo coverage report and checking thresholds..."
                 sh "mvn jacoco:report -Dproject.build.sourceDirectory=${CUSTOM_SRC}"
-
-                // Apply coverage thresholds
-                sh """
-                mvn jacoco:check \
-                    -Djacoco.check.rules[0].element=BUNDLE \
-                    -Djacoco.check.rules[0].limits[0].counter=INSTRUCTION \
-                    -Djacoco.check.rules[0].limits[0].value=COVEREDRATIO \
-                    -Djacoco.check.rules[0].limits[0].minimum=0.80 \
-                    -Djacoco.check.rules[0].limits[1].counter=BRANCH \
-                    -Djacoco.check.rules[0].limits[1].value=COVEREDRATIO \
-                    -Djacoco.check.rules[0].limits[1].minimum=0.70
-                """
+                sh "mvn jacoco:check -Dproject.build.sourceDirectory=${CUSTOM_SRC}"
                 publishHTML([
                     allowMissing: false,
                     alwaysLinkToLastBuild: true,
@@ -68,7 +52,7 @@ pipeline {
 
         stage('Archive Artifacts') {
             steps {
-                echo "Archiving JAR artifacts..."
+                echo "Packaging and archiving JAR..."
                 sh "mvn package -Dproject.build.sourceDirectory=${CUSTOM_SRC}"
                 archiveArtifacts artifacts: 'target/*.jar', allowEmptyArchive: false
             }
@@ -84,7 +68,7 @@ pipeline {
 
     post {
         always {
-            echo "Pipeline finished (success/failure/unstable)."
+            echo "Pipeline finished."
         }
 
         success {
